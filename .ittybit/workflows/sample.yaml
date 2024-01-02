@@ -1,0 +1,48 @@
+name: Test Workflow
+project_id: "abc_1232"
+directory: "test"
+
+workflow:
+  - name: "Encode"
+    type: "quick-encode"
+    on_failure:
+      continue: false
+  - name: "Screenshots"
+    type: "screenshot+vtt"
+    depends_on: "Encode"
+    on_failure:
+      continue: true
+      call: webhook
+  - name: "Speech"
+    type: "intel-speech"
+    on_failure:
+      continue: true
+      call: webhook
+      depends_on: "Encode"
+   - name: Watermark
+     type: "watermark"
+     config:
+        font: "inter-or-other-google-font"
+        text: |
+          Ittybit
+on_failure:
+  call: webhook
+ 
+on_success:
+  call: webhook
+
+functions:
+  - name: webhook
+    config:
+      url: https://test.com/api
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Authorization: "Bearer ABC123"
+        X-Key: sample-key
+      include:
+        - error_message
+        - id
+        - date
+        - state
+    
